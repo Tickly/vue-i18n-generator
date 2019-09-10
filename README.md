@@ -1,5 +1,11 @@
 # vue-i18n-generator
 
+不喜欢硬编码的方式去写语言包，所以写了个工具更加直观的去写。
+
+支持导入，导出。
+
+
+
 ## Project setup
 ```
 npm install
