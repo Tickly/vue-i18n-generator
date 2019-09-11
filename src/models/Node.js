@@ -53,4 +53,14 @@ export default class Node {
     child.parent = this
     this.children.push(child)
   }
+
+  remove() {
+    this.parent.children = this.parent.children.filter(
+      child => child.key !== this.key
+    )
+
+    if (this.parent.children.length === 0) {
+      this.parent.languages = {}
+    }
+  }
 }
