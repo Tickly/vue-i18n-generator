@@ -1,33 +1,32 @@
 <template>
   <el-container style="height:100%;">
     <el-header height="auto">
-      <div style="display:flex;justify-content:space-between;">
-        <div>
-          <el-button type="info" @click="setCurrent()">取消选中</el-button>
-          <el-button type="primary" @click="addKey">添加 Key</el-button>
-          <el-button type="primary" @click="addLanguage">添加 语言</el-button>
-        </div>
-        <div>
-          <el-button @click="handleImport">导入</el-button>
+      <el-dialog title="帮助文档" :visible.sync="dialogVisible">
+        <p>鼠标移动到路径上，会出现“复制”按钮，方便复制路径</p>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        </span>
+      </el-dialog>
+      <el-row class="row">
+        <el-col :span="8">
+          <el-button type="primary" @click="handleAppendRoot">添加根节点Key</el-button>
+          <el-button type="success" @click="addLanguage">添加 语言</el-button>
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="filename">
+            <template slot="prepend">文件名：</template>
+          </el-input>
+        </el-col>
+        <el-col :span="8" class="text-right">
+          <el-button type="primary" @click="handleImport">导入</el-button>
           <el-button @click="handleExport">导出</el-button>
           <el-button type="info" @click="dialogVisible = true">查看帮助</el-button>
-
-          <el-dialog title="帮助文档" :visible.sync="dialogVisible">
-            <p>点击数据即可选中节点，选中的节点会高亮显示。</p>
-            <ul>
-              <li>若有选中节点，则添加的节点为子节点。</li>
-              <li>若无选中节点，则添加的节点为根节点。</li>
-            </ul>
-            <p>鼠标移动到路径上，会出现“复制”按钮，方便复制路径</p>
-            <span slot="footer" class="dialog-footer">
-              <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-            </span>
-          </el-dialog>
-        </div>
-      </div>
+        </el-col>
+      </el-row>
     </el-header>
     <el-main>
       <el-table
+        height="400"
         ref="singleTable"
         highlight-current-row
         :data="list"
@@ -40,7 +39,7 @@
           <template slot-scope="scope">
             <div class="cell-fullPath">
               <span>{{scope.row.fullPath}}</span>
-              <el-button size="small" @click="copyText(scope.row.fullPath)">复制</el-button>
+              <el-button size="mini" @click="copyText(scope.row.fullPath)">复制</el-button>
             </div>
           </template>
         </el-table-column>
@@ -53,23 +52,24 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="250">
           <template slot-scope="scope">
-            <el-button type="danger" @click="handleRemove(scope.row)">移除</el-button>
+            <el-button type="danger" size="mini" @click="handleRemove(scope.row)">移除</el-button>
+            <el-button type="primary" size="mini" @click="handleAppend(scope.row)">添加子节点</el-button>
           </template>
         </el-table-column>
       </el-table>
+      <div>
+        <p>拖拽文件到文本框，可导入现有数据</p>
+        <el-input
+          type="textarea"
+          @drop.native.prevent="handleDrop"
+          :rows="6"
+          placeholder="请输入内容"
+          :value="formatText"
+        ></el-input>
+      </div>
     </el-main>
-    <el-footer height="auto">
-      <p>拖拽文件到文本框，可导入现有数据</p>
-      <el-input
-        type="textarea"
-        @drop.native.prevent="handleDrop"
-        :rows="6"
-        placeholder="请输入内容"
-        :value="formatText"
-      ></el-input>
-    </el-footer>
   </el-container>
 </template>
 
@@ -79,8 +79,9 @@ import Node from './models/Node.js'
 export default {
   name: 'App',
   components: {},
-  data() {
+  data () {
     return {
+      filename: 'message.json',
       dialogVisible: false,
       list: [],
       languages: [],
@@ -88,7 +89,7 @@ export default {
     }
   },
   computed: {
-    formatText() {
+    formatText () {
       let json = {}
 
       this.languages.forEach(lang => {
@@ -102,9 +103,9 @@ export default {
       return JSON.stringify(json)
     }
   },
-  created() {},
+  created () { },
   methods: {
-    addKey() {
+    addKey () {
       this.$prompt('', '请输入Key').then(({ value }) => {
         if (!value) return
 
@@ -117,16 +118,16 @@ export default {
         }
       })
     },
-    addLanguage() {
+    addLanguage () {
       this.$prompt('', '请输入语言包名称').then(({ value }) => {
         if (value) this.languages.push(value)
       })
     },
-    handleCurrentChange(val) {
+    handleCurrentChange (val) {
       this.currentRow = val
     },
     // 选择文件导入
-    handleImport() {
+    handleImport () {
       let input = document.createElement('input')
       input.type = 'file'
       input.accept = 'application/json'
@@ -137,25 +138,30 @@ export default {
       input.click()
     },
     // 导出
-    handleExport() {
+    handleExport () {
       let b = new Blob([this.formatText])
 
       let a = document.createElement('a')
-      a.download = 'messages.json'
+      a.download = this.filename
       a.href = window.URL.createObjectURL(b)
       a.click()
     },
     // 拖放导入
-    handleDrop(e) {
+    handleDrop (e) {
       let { files } = e.dataTransfer
 
       this.importByFile(files)
     },
     // 从文件导入数据，二次编辑
-    importByFile(files) {
-      if (files.length === 0) return
+    importByFile (files) {
+      if (files.length !== 1) {
+        return
+      }
 
       let file = files[0]
+
+      // 解析出文件名，方便导出的时候直接使用原来的文件名
+      this.filename = file.name
 
       let reader = new FileReader()
       reader.onload = event => {
@@ -174,11 +180,11 @@ export default {
       }
       reader.readAsText(file)
     },
-    setCurrent(row) {
+    setCurrent (row) {
       this.$refs.singleTable.setCurrentRow(row)
     },
     // 复制文字
-    copyText(text) {
+    copyText (text) {
       let input = document.createElement('textarea')
       input.value = text
       input.style.position = 'fixed'
@@ -191,9 +197,20 @@ export default {
       }
       document.body.removeChild(input)
     },
-    handleRemove(node) {
+    // 移除节点
+    handleRemove (node) {
       if (node.parent) node.remove()
       else this.list = this.list.filter(n => n.key !== node.key)
+    },
+    // 添加子节点
+    handleAppend (node) {
+      this.setCurrent(node)
+      this.addKey()
+    },
+    // 添加根节点
+    handleAppendRoot () {
+      this.setCurrent(null)
+      this.addKey()
     }
   }
 }
@@ -218,6 +235,9 @@ body {
 }
 </style>
 <style lang="scss">
+.text-right {
+  text-align: right;
+}
 .cell-fullPath {
   display: flex;
   justify-content: space-between;
