@@ -4,6 +4,7 @@
 
 支持导入，导出。
 
+[在线演示](http://vue-i18n-generator.onlytg.com/)
 
 
 ## Project setup

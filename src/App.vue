@@ -2,6 +2,8 @@
   <el-container style="height:100%;">
     <el-header height="auto">
       <el-dialog title="帮助文档" :visible.sync="dialogVisible">
+        <p>新文档就先新增根节点再添加语言</p>
+        <p>已有文档就点导入或者拖到下方文本框</p>
         <p>鼠标移动到路径上，会出现“复制”按钮，方便复制路径</p>
         <span slot="footer" class="dialog-footer">
           <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
