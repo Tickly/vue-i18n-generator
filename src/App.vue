@@ -15,7 +15,7 @@
       </el-dialog>
       <el-row class="row">
         <el-col :span="8">
-          <el-button type="primary" @click="handleAppendRoot">添加根节点Key</el-button>
+          <el-button type="primary" @click="handleAppendRoot">添加根节点</el-button>
           <el-button type="success" @click="addLanguage">添加语言</el-button>
         </el-col>
         <el-col :span="8">
@@ -39,7 +39,6 @@
         row-key="fullPath"
         border
         @cell-dblclick="handleCellDbClick"
-        @current-change="handleCurrentChange"
       >
         <el-table-column type="index" align="center" />
         <el-table-column prop="key" label="节点名称" />
@@ -55,6 +54,7 @@
           <template slot-scope="scope">
             <div
               v-if="scope.row.children.length === 0"
+              :key="scope.row.children.length"
               class="cell-lang-value"
             >
               {{ scope.row.languages[lang] }}
@@ -93,7 +93,6 @@ export default {
       dialogVisible: false,
       list: [],
       languages: [],
-      currentRow: null
     }
   },
   computed: {
@@ -128,18 +127,15 @@ export default {
     })
   },
   methods: {
-    addKey () {
+    addKey (parent) {
       this.$prompt('请输入新的节点名', '新增')
         .then(({ value }) => {
           if (!value) return
 
           let node = new Node(value)
 
-          if (this.currentRow) {
-            this.currentRow.append(node)
-          } else {
-            this.list.push(node)
-          }
+          if (parent) parent.append(node)
+          else this.list.push(node)
         })
         .catch(() => { })
     },
@@ -148,9 +144,7 @@ export default {
         if (value) this.languages.push(value)
       })
     },
-    handleCurrentChange (val) {
-      this.currentRow = val
-    },
+
     // 选择文件导入
     handleImport () {
       let input = document.createElement('input')
@@ -208,9 +202,6 @@ export default {
         key => new Node(key, firstLanguage[key], json)
       )
     },
-    setCurrent (row) {
-      this.$refs.singleTable.setCurrentRow(row)
-    },
     // 复制文字
     copyText (text) {
       let input = document.createElement('textarea')
@@ -236,12 +227,10 @@ export default {
     },
     // 添加子节点
     handleAppend (node) {
-      this.setCurrent(node)
-      this.addKey()
+      this.addKey(node)
     },
     // 添加根节点
     handleAppendRoot () {
-      this.setCurrent(null)
       this.addKey()
     },
     handleCellDbClick (row, column, cell, event) {
@@ -268,7 +257,7 @@ export default {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             inputValue: value,
-          }).then(({ value }) => { row.languages[lang] = value }).catch(() => { })
+          }).then(({ value }) => { row.setContent(lang, value) }).catch(() => { })
         }
       }
     },

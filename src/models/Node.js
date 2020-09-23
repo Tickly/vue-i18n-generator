@@ -1,4 +1,4 @@
-function getProperty(obj, path) {
+function getProperty (obj, path) {
   let paths = path.split('.')
   let value = obj
   do {
@@ -9,7 +9,7 @@ function getProperty(obj, path) {
 }
 
 export default class Node {
-  constructor(key, value, json) {
+  constructor (key, value, json) {
     this.key = key
     this.children = []
 
@@ -33,7 +33,7 @@ export default class Node {
     }
   }
 
-  getLang(lang) {
+  getLang (lang) {
     let message = {}
 
     if (this.children.length) {
@@ -45,22 +45,29 @@ export default class Node {
     return message
   }
 
-  get fullPath() {
+  get fullPath () {
     return this.parent ? `${this.parent.fullPath}.${this.key}` : this.key
   }
 
-  append(child) {
+  append (child) {
     child.parent = this
     this.children.push(child)
   }
 
-  remove() {
+  remove () {
     this.parent.children = this.parent.children.filter(
       child => child.key !== this.key
     )
 
     if (this.parent.children.length === 0) {
       this.parent.languages = {}
+    }
+  }
+
+  setContent (lang, content) {
+    this.languages = {
+      ...this.languages,
+      [lang]: content,
     }
   }
 }
