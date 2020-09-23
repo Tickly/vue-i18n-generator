@@ -2,9 +2,13 @@
   <el-container style="height:100%;">
     <el-header height="auto">
       <el-dialog title="帮助文档" :visible.sync="dialogVisible">
-        <p>新文档就先新增根节点再添加语言</p>
-        <p>已有文档就点导入或者拖到下方文本框</p>
-        <p>鼠标移动到路径上，会出现“复制”按钮，方便复制路径</p>
+        <ol>
+          <li>新文档就先新增根节点再添加语言</li>
+          <li>已有文档就点导入或者拖到下方文本框</li>
+          <li>鼠标移动到节点路径上，会出现“复制”按钮，方便复制节点路径</li>
+          <li>双击节点名称可以进行修改</li>
+          <li>双击语言内容可以进行修改</li>
+        </ol>
         <span slot="footer" class="dialog-footer">
           <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
         </span>
@@ -12,7 +16,7 @@
       <el-row class="row">
         <el-col :span="8">
           <el-button type="primary" @click="handleAppendRoot">添加根节点Key</el-button>
-          <el-button type="success" @click="addLanguage">添加 语言</el-button>
+          <el-button type="success" @click="addLanguage">添加语言</el-button>
         </el-col>
         <el-col :span="8">
           <el-input v-model="filename">
@@ -28,30 +32,33 @@
     </el-header>
     <el-main>
       <el-table
-        height="400"
         ref="singleTable"
+        height="400"
         highlight-current-row
         :data="list"
         row-key="fullPath"
+        border
+        @cell-dblclick="handleCellDbClick"
         @current-change="handleCurrentChange"
       >
-        <el-table-column type="index" />
-        <el-table-column prop="key" label="key" />
-        <el-table-column prop="fullPath" label="路径">
+        <el-table-column type="index" align="center" />
+        <el-table-column prop="key" label="节点名称" />
+        <el-table-column prop="fullPath" label="节点路径">
           <template slot-scope="scope">
             <div class="cell-fullPath">
-              <span>{{scope.row.fullPath}}</span>
+              <span>{{ scope.row.fullPath }}</span>
               <el-button size="mini" @click="copyText(scope.row.fullPath)">复制</el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-for="lang in languages" :key="lang" :label="lang">
+        <el-table-column v-for="lang in languages" :key="lang" :prop="`lang-${lang}`" :label="lang">
           <template slot-scope="scope">
-            <el-input
+            <div
               v-if="scope.row.children.length === 0"
-              v-model="scope.row.languages[lang]"
-              :class="{'is-invalid':  !scope.row.languages[lang] }"
-            />
+              class="cell-lang-value"
+            >
+              {{ scope.row.languages[lang] }}
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="250">
@@ -65,11 +72,11 @@
         <p>拖拽文件到文本框，可导入现有数据</p>
         <el-input
           type="textarea"
-          @drop.native.prevent="handleDrop"
-          :rows="6"
+          :rows="5"
           placeholder="请输入内容"
           :value="formatText"
-        ></el-input>
+          @drop.native.prevent="handleDrop"
+        />
       </div>
     </el-main>
   </el-container>
@@ -80,7 +87,6 @@ import Node from './models/Node.js'
 
 export default {
   name: 'App',
-  components: {},
   data () {
     return {
       filename: 'message.json',
@@ -105,23 +111,40 @@ export default {
       return JSON.stringify(json)
     }
   },
-  created () { },
+  created () {
+    this.parseJson({
+      'en': {
+        Account: {
+          Username: 'Username',
+          Password: 'Password'
+        }
+      },
+      'zh-CN': {
+        Account: {
+          Username: '姓名',
+          Password: '密码'
+        }
+      }
+    })
+  },
   methods: {
     addKey () {
-      this.$prompt('', '请输入Key').then(({ value }) => {
-        if (!value) return
+      this.$prompt('请输入新的节点名', '新增')
+        .then(({ value }) => {
+          if (!value) return
 
-        let node = new Node(value)
+          let node = new Node(value)
 
-        if (this.currentRow) {
-          this.currentRow.append(node)
-        } else {
-          this.list.push(node)
-        }
-      })
+          if (this.currentRow) {
+            this.currentRow.append(node)
+          } else {
+            this.list.push(node)
+          }
+        })
+        .catch(() => { })
     },
     addLanguage () {
-      this.$prompt('', '请输入语言包名称').then(({ value }) => {
+      this.$prompt('', '请输入语言名称').then(({ value }) => {
         if (value) this.languages.push(value)
       })
     },
@@ -169,18 +192,21 @@ export default {
       reader.onload = event => {
         let json = JSON.parse(event.target.result)
 
-        // 先解析出语言
-        this.languages = Object.keys(json)
-
-        let values = Object.values(json)
-
-        // 从第一个语言提取出结构来
-        let firstLanguage = values[0]
-        this.list = Object.keys(firstLanguage).map(
-          key => new Node(key, firstLanguage[key], json)
-        )
+        this.parseJson(json)
       }
       reader.readAsText(file)
+    },
+    parseJson (json) {
+      // 先解析出语言
+      this.languages = Object.keys(json)
+
+      let values = Object.values(json)
+
+      // 从第一个语言提取出结构来
+      let firstLanguage = values[0]
+      this.list = Object.keys(firstLanguage).map(
+        key => new Node(key, firstLanguage[key], json)
+      )
     },
     setCurrent (row) {
       this.$refs.singleTable.setCurrentRow(row)
@@ -195,14 +221,18 @@ export default {
       document.body.appendChild(input)
       input.select()
       if (document.execCommand('copy')) {
-        this.$message(`文字 ${text} 已复制`)
+        this.$message(`节点路径 ${text} 已复制`)
       }
       document.body.removeChild(input)
     },
     // 移除节点
     handleRemove (node) {
-      if (node.parent) node.remove()
-      else this.list = this.list.filter(n => n.key !== node.key)
+      this.$confirm(`确定要移除节点 ${node.fullPath} 吗？`, '确认')
+        .then(() => {
+          if (node.parent) node.remove()
+          else this.list = this.list.filter(n => n.key !== node.key)
+        })
+        .catch(() => { })
     },
     // 添加子节点
     handleAppend (node) {
@@ -213,7 +243,35 @@ export default {
     handleAppendRoot () {
       this.setCurrent(null)
       this.addKey()
-    }
+    },
+    handleCellDbClick (row, column, cell, event) {
+      console.log(row, column)
+
+      if (column.property === 'key') {
+        this.$prompt('请输入新的节点名', '修改', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^[a-zA-Z][a-zA-Z0-9]*$/,
+          inputErrorMessage: '目前只允许输入字母与数字，且必须是字母开头',
+          inputValue: row.key,
+        }).then(({ value }) => { row.key = value }).catch(() => { })
+      }
+
+      // 如果是lang-开头的列，表示是语言值
+      if (column.property.indexOf('lang-') === 0) {
+        // 如果不包含子节点了，则可以修改值
+        if (row.children.length === 0) {
+          let lang = column.property.slice(5)
+          let value = row.languages[lang]
+
+          this.$prompt('请输入新的内容', '修改', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputValue: value,
+          }).then(({ value }) => { row.languages[lang] = value }).catch(() => { })
+        }
+      }
+    },
   }
 }
 </script>
