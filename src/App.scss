@@ -1,3 +1,14 @@
-.btn+.btn {
-  margin-left: .5em;
+.el-container {
+  padding: 0;
+}
+
+.el-header {
+  border-bottom: 1px solid #ebeef5;
+  padding: 0.5em 1em;
+}
+
+.el-button {
+  +.el-select {
+    margin-left: .5em;
+  }
 }

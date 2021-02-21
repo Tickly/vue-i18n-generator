@@ -1,5 +1,5 @@
 <template>
-  <el-container style="height:100%;">
+  <el-container style="height: 100%">
     <el-header height="auto">
       <el-dialog title="帮助文档" :visible.sync="dialogVisible">
         <ol>
@@ -10,27 +10,43 @@
           <li>双击语言内容可以进行修改</li>
         </ol>
         <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+          <el-button
+            type="primary" @click="dialogVisible = false"
+          >确 定</el-button>
         </span>
       </el-dialog>
-      <el-row class="row">
-        <el-col :span="8">
-          <el-button type="primary" @click="handleAppendRoot">添加根节点</el-button>
-          <el-button type="success" @click="addLanguage">添加语言</el-button>
+
+      <el-row>
+        <el-col :span="12">
+          <el-button-group>
+            <el-button type="primary" @click="handleImport">
+              {{ $t('actions.import') }}
+            </el-button>
+            <el-button type="primary" @click="handleExport">
+              {{ $t('actions.export') }}
+            </el-button>
+          </el-button-group>
         </el-col>
-        <el-col :span="8">
-          <el-input v-model="filename">
-            <template slot="prepend">文件名：</template>
-          </el-input>
-        </el-col>
-        <el-col :span="8" class="text-right">
-          <el-button type="primary" @click="handleImport">导入</el-button>
-          <el-button @click="handleExport">导出</el-button>
-          <el-button type="info" @click="dialogVisible = true">查看帮助</el-button>
+        <el-col :span="12" class="text-right">
+          <el-button type="info" @click="dialogVisible = true">
+            {{ $t('actions.tips') }}
+          </el-button>
+          <el-select v-model="$i18n.locale" placeholder="选择语言">
+            <el-option label="中文" value="zh-CN" />
+            <el-option label="English" value="en" />
+          </el-select>
         </el-col>
       </el-row>
     </el-header>
     <el-main>
+      <p>
+        <el-button type="primary" @click="handleAppendRoot">
+          {{ $t('actions.addRootNode') }}
+        </el-button>
+        <el-button type="success" @click="addLanguage">
+          {{ $t('actions.addLanguage') }}
+        </el-button>
+      </p>
       <el-table
         ref="singleTable"
         height="400"
@@ -41,16 +57,23 @@
         @cell-dblclick="handleCellDbClick"
       >
         <el-table-column type="index" align="center" />
-        <el-table-column prop="key" label="节点名称" />
-        <el-table-column prop="fullPath" label="节点路径">
+        <el-table-column prop="key" :label="$t('columns.nodeName')" />
+        <el-table-column prop="fullPath" :label="$t('columns.nodePath')">
           <template slot-scope="scope">
             <div class="cell-fullPath">
               <span>{{ scope.row.fullPath }}</span>
-              <el-button size="mini" @click="copyText(scope.row.fullPath)">复制</el-button>
+              <el-button size="mini" @click="copyText(scope.row.fullPath)">
+                {{ $t('actions.copy') }}
+              </el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-for="lang in languages" :key="lang" :prop="`lang-${lang}`" :label="lang">
+        <el-table-column
+          v-for="lang in languages"
+          :key="lang"
+          :prop="`lang-${lang}`"
+          :label="lang"
+        >
           <template slot-scope="scope">
             <div
               v-if="scope.row.children.length === 0"
@@ -61,10 +84,22 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250">
+        <el-table-column :label="$t('columns.actions')" width="250">
           <template slot-scope="scope">
-            <el-button type="danger" size="mini" @click="handleRemove(scope.row)">移除</el-button>
-            <el-button type="primary" size="mini" @click="handleAppend(scope.row)">添加子节点</el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              @click="handleRemove(scope.row)"
+            >
+              {{ $t('actions.remove') }}
+            </el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="handleAppend(scope.row)"
+            >
+              {{ $t('actions.addSubNode') }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -161,7 +196,7 @@ export default {
       let b = new Blob([this.formatText])
 
       let a = document.createElement('a')
-      a.download = this.filename
+      a.download = 'messages.json'
       a.href = window.URL.createObjectURL(b)
       a.click()
     },
