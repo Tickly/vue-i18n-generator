@@ -9,3 +9,5 @@
 支持导入，导出。
 
 [在线演示](http://vue-i18n-generator.onlytg.com/)
+
+[文章介绍](https://segmentfault.com/a/1190000020357367)
