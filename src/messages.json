@@ -1,10 +1,14 @@
 {
   "en": {
+    "prompt": {
+      "drag": "Drag and drop files into the text box to import existing data."
+    },
     "actions": {
       "import": "Import",
       "export": "Export",
       "remove": "Remove",
       "copy": "Copy",
+      "paste": "Paste",
       "addLanguage": "Add Language",
       "addRootNode": "Add Root Node",
       "addSubNode": "Add Sub Node",
@@ -18,11 +22,15 @@
     }
   },
   "zh-CN": {
+    "prompt": {
+      "drag": "拖拽文件到文本框，可导入现有数据。"
+    },
     "actions": {
       "import": "导入",
       "export": "导出",
       "remove": "移除",
       "copy": "复制",
+      "paste": "粘贴",
       "addLanguage": "添加语言",
       "addRootNode": "添加根节点",
       "addSubNode": "添加子节点",

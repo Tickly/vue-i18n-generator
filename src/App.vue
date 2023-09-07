@@ -36,10 +36,10 @@
           <el-button type="info" @click="dialogVisible = true">
             {{ $t('actions.tips') }}
           </el-button>
-          <el-select v-model="$i18n.locale" placeholder="选择语言">
-            <el-option label="中文" value="zh-CN" />
-            <el-option label="English" value="en" />
-          </el-select>
+          <el-radio-group v-model="$i18n.locale">
+            <el-radio-button label="zh-CN">中文</el-radio-button>
+            <el-radio-button label="en">English</el-radio-button>
+          </el-radio-group>
         </el-col>
       </el-row>
     </el-header>
@@ -109,12 +109,23 @@
         </el-table-column>
       </el-table>
       <div>
-        <p>拖拽文件到文本框，可导入现有数据</p>
+        <div class="flex justify-between items-center">
+          <p>{{ $t('prompt.drag') }}</p>
+          <el-button-group>
+            <el-button type="primary" @click="onCopyJson">
+              {{ $t('actions.copy') }}
+            </el-button>
+            <el-button disabled type="primary" @click="onPasteJson">
+              {{ $t('actions.paste') }}
+            </el-button>
+          </el-button-group>
+        </div>
         <el-input
+          class="message-input"
           type="textarea"
-          :rows="5"
-          placeholder="请输入内容"
+          :rows="3"
           :value="formatText"
+          resize="none"
           @drop.native.prevent="handleDrop"
         />
       </div>
@@ -252,7 +263,7 @@ export default {
       document.body.appendChild(input)
       input.select()
       if (document.execCommand('copy')) {
-        this.$message(`节点路径 ${text} 已复制`)
+        this.$message.success('复制成功')
       }
       document.body.removeChild(input)
     },
@@ -309,6 +320,12 @@ export default {
         }
       }
     },
+
+    onCopyJson() {
+      this.copyText(this.formatText)
+      // this.$message.success()
+    },
+    onPasteJson() {},
   },
 }
 </script>
@@ -335,8 +352,14 @@ body {
 .flex {
   display: flex;
 }
-.justify-end{
+.justify-end {
   justify-content: flex-end;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.items-center {
+  align-items: center;
 }
 .gap-4 {
   gap: 1rem;
@@ -361,5 +384,10 @@ body {
   .el-input__inner {
     border-color: #f56c6c;
   }
+}
+
+.message-input textarea {
+  border-width: 3px;
+  border-style: dashed;
 }
 </style>
