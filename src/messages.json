@@ -1,1 +1,38 @@
-{"en":{"actions":{"import":"Import","export":"Export","remove":"Remove","copy":"Copy","addLanguage":"Add Language","addRootNode":"Add Root Node","addSubNode":"Add Sub Node","tips":"Tips"},"columns":{"nodeName":"Node Name","nodePath":"Node Path","actions":"Actions"}},"zh-CN":{"actions":{"import":"导入","export":"导出","remove":"移除","copy":"复制","addLanguage":"添加语言","addRootNode":"添加根节点","addSubNode":"添加子节点","tips":"查看帮助"},"columns":{"nodeName":"节点名称","nodePath":"节点路径","actions":"操作"}}}
+{
+  "en": {
+    "actions": {
+      "import": "Import",
+      "export": "Export",
+      "remove": "Remove",
+      "copy": "Copy",
+      "addLanguage": "Add Language",
+      "addRootNode": "Add Root Node",
+      "addSubNode": "Add Sub Node",
+      "tips": "Tips",
+      "feedback": "Feedback"
+    },
+    "columns": {
+      "nodeName": "Node Name",
+      "nodePath": "Node Path",
+      "actions": "Actions"
+    }
+  },
+  "zh-CN": {
+    "actions": {
+      "import": "导入",
+      "export": "导出",
+      "remove": "移除",
+      "copy": "复制",
+      "addLanguage": "添加语言",
+      "addRootNode": "添加根节点",
+      "addSubNode": "添加子节点",
+      "tips": "查看帮助",
+      "feedback": "意见反馈"
+    },
+    "columns": {
+      "nodeName": "节点名称",
+      "nodePath": "节点路径",
+      "actions": "操作"
+    }
+  }
+}

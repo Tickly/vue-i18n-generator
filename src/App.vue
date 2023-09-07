@@ -27,7 +27,12 @@
             </el-button>
           </el-button-group>
         </el-col>
-        <el-col :span="12" class="text-right">
+        <el-col :span="12" class="text-right flex gap-4 justify-end">
+          <a href="https://support.qq.com/product/607712" target="_blank">
+            <el-button>
+              {{ $t('actions.feedback') }}
+            </el-button>
+          </a>
           <el-button type="info" @click="dialogVisible = true">
             {{ $t('actions.tips') }}
           </el-button>
@@ -122,7 +127,7 @@ import Node from './models/Node.js'
 
 export default {
   name: 'App',
-  data () {
+  data() {
     return {
       filename: 'message.json',
       dialogVisible: false,
@@ -131,10 +136,10 @@ export default {
     }
   },
   computed: {
-    formatText () {
+    formatText() {
       let json = {}
 
-      this.languages.forEach(lang => {
+      this.languages.forEach((lang) => {
         json[lang] = this.list.reduce((p, c) => {
           let m = c.getLang(lang)
 
@@ -143,26 +148,26 @@ export default {
       })
 
       return JSON.stringify(json)
-    }
+    },
   },
-  created () {
+  created() {
     this.parseJson({
-      'en': {
+      en: {
         Account: {
           Username: 'Username',
-          Password: 'Password'
-        }
+          Password: 'Password',
+        },
       },
       'zh-CN': {
         Account: {
           Username: '姓名',
-          Password: '密码'
-        }
-      }
+          Password: '密码',
+        },
+      },
     })
   },
   methods: {
-    addKey (parent) {
+    addKey(parent) {
       this.$prompt('请输入新的节点名', '新增')
         .then(({ value }) => {
           if (!value) return
@@ -172,27 +177,27 @@ export default {
           if (parent) parent.append(node)
           else this.list.push(node)
         })
-        .catch(() => { })
+        .catch(() => {})
     },
-    addLanguage () {
+    addLanguage() {
       this.$prompt('', '请输入语言名称').then(({ value }) => {
         if (value) this.languages.push(value)
       })
     },
 
     // 选择文件导入
-    handleImport () {
+    handleImport() {
       let input = document.createElement('input')
       input.type = 'file'
       input.accept = 'application/json'
-      input.onchange = e => {
+      input.onchange = (e) => {
         let { files } = e.target
         this.importByFile(files)
       }
       input.click()
     },
     // 导出
-    handleExport () {
+    handleExport() {
       let b = new Blob([this.formatText])
 
       let a = document.createElement('a')
@@ -201,13 +206,13 @@ export default {
       a.click()
     },
     // 拖放导入
-    handleDrop (e) {
+    handleDrop(e) {
       let { files } = e.dataTransfer
 
       this.importByFile(files)
     },
     // 从文件导入数据，二次编辑
-    importByFile (files) {
+    importByFile(files) {
       if (files.length !== 1) {
         return
       }
@@ -218,14 +223,14 @@ export default {
       this.filename = file.name
 
       let reader = new FileReader()
-      reader.onload = event => {
+      reader.onload = (event) => {
         let json = JSON.parse(event.target.result)
 
         this.parseJson(json)
       }
       reader.readAsText(file)
     },
-    parseJson (json) {
+    parseJson(json) {
       // 先解析出语言
       this.languages = Object.keys(json)
 
@@ -234,11 +239,11 @@ export default {
       // 从第一个语言提取出结构来
       let firstLanguage = values[0]
       this.list = Object.keys(firstLanguage).map(
-        key => new Node(key, firstLanguage[key], json)
+        (key) => new Node(key, firstLanguage[key], json)
       )
     },
     // 复制文字
-    copyText (text) {
+    copyText(text) {
       let input = document.createElement('textarea')
       input.value = text
       input.style.position = 'fixed'
@@ -252,23 +257,23 @@ export default {
       document.body.removeChild(input)
     },
     // 移除节点
-    handleRemove (node) {
+    handleRemove(node) {
       this.$confirm(`确定要移除节点 ${node.fullPath} 吗？`, '确认')
         .then(() => {
           if (node.parent) node.remove()
-          else this.list = this.list.filter(n => n.key !== node.key)
+          else this.list = this.list.filter((n) => n.key !== node.key)
         })
-        .catch(() => { })
+        .catch(() => {})
     },
     // 添加子节点
-    handleAppend (node) {
+    handleAppend(node) {
       this.addKey(node)
     },
     // 添加根节点
-    handleAppendRoot () {
+    handleAppendRoot() {
       this.addKey()
     },
-    handleCellDbClick (row, column, cell, event) {
+    handleCellDbClick(row, column, cell, event) {
       console.log(row, column)
 
       if (column.property === 'key') {
@@ -278,7 +283,11 @@ export default {
           inputPattern: /^[a-zA-Z][a-zA-Z0-9]*$/,
           inputErrorMessage: '目前只允许输入字母与数字，且必须是字母开头',
           inputValue: row.key,
-        }).then(({ value }) => { row.key = value }).catch(() => { })
+        })
+          .then(({ value }) => {
+            row.key = value
+          })
+          .catch(() => {})
       }
 
       // 如果是lang-开头的列，表示是语言值
@@ -292,11 +301,15 @@ export default {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             inputValue: value,
-          }).then(({ value }) => { row.setContent(lang, value) }).catch(() => { })
+          })
+            .then(({ value }) => {
+              row.setContent(lang, value)
+            })
+            .catch(() => {})
         }
       }
     },
-  }
+  },
 }
 </script>
 
@@ -319,6 +332,15 @@ body {
 }
 </style>
 <style lang="scss">
+.flex {
+  display: flex;
+}
+.justify-end{
+  justify-content: flex-end;
+}
+.gap-4 {
+  gap: 1rem;
+}
 .text-right {
   text-align: right;
 }
